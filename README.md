@@ -7,33 +7,25 @@
 **End-to-end data science pipeline for aviation demand forecasting:**  
 process integrity review → exploratory data analysis → feature selection → Prophet modeling → interactive deployment  
 
-*(Synthetic data recreation of proprietary workflow – full transparency below)*
+## Data Source
+This project uses **real-world public data** from the [Bureau of Transportation Statistics (BTS) T-100 Domestic Segment dataset](https://www.transtats.bts.gov/), filtered to American Airlines (2014–2025). This covers 12 years of monthly flight operations including airborne hours and departure counts across aircraft groups — serving as a public proxy for the same forecasting methodology applied in fractional/private aviation contexts.
 
-## Important Note on Proprietary Work
-Since I cannot publicly share proprietary projects or internal data from my current role, I have **replicated the same end-to-end data science workflow** using **fully synthetic data that I generated myself**.  
-
-This demonstrates the identical process and skills I apply professionally:
-- Upstream process integrity review  
-- Exploratory data analysis on time-series demand data  
-- Critical feature selection based on quality assessment  
-- Time-series forecasting with Prophet  
-- Simple deployment as a shareable app  
-
-All data, code, and insights are 100% synthetic / recreated — no real company data is used or exposed.
+No proprietary or internal data is used.
 
 ## Project Overview
-This repository showcases a complete data science pipeline for forecasting demand in an aviation operations context (e.g., revenue hours or flight volume). The goal is to identify reliable signals for proactive resource planning and cost optimization.
+Complete data science pipeline for forecasting aviation demand (airborne hours) with the goal of enabling proactive resource allocation and operational cost reduction.
 
 ### Key Components
 1. Anonymized process integrity review of booking classification  
-2. EDA on synthetic flight demand data (seasonality, trends, variance)  
-3. Feature engineering & selection informed by process review  
-4. Prophet time-series modeling (baseline + regressors)  
-5. Streamlit deployment for interactive forecasting demo  
+2. Data ingestion and cleaning from BTS T-100 raw CSVs  
+3. EDA on 12 years of flight demand data (seasonality, trends, variance)  
+4. Feature engineering & selection informed by process review  
+5. Prophet time-series modeling (baseline + regressors)  
+6. Streamlit deployment for interactive forecasting demo  
 
 ## Table of Contents
 - [Process Integrity Review (Anonymized Case Study)](#process-integrity-review-anonymized-case-study)  
-- [Synthetic Data Generation](#synthetic-data-generation)  
+- [Data Pipeline](#data-pipeline)  
 - [Exploratory Data Analysis](#exploratory-data-analysis)  
 - [Feature Selection](#feature-selection)  
 - [Prophet Forecasting Model](#prophet-forecasting-model)  
@@ -69,17 +61,26 @@ Unreliable or unstructured signals were excluded from modeling or proxied (e.g.,
 
 This case study is a generic, anonymized summary of the same type of analysis performed professionally — no proprietary details are disclosed.
 
-## Synthetic Data Generation
-Data is **fully synthetic** but designed to mimic realistic aviation demand patterns (trend growth, yearly seasonality, holiday peaks, daily variance, fleet-like split).
+## Data Pipeline
+Notebook: `/notebooks/00_data_pipeline.ipynb`
 
-See `/notebooks/00_generate_synthetic_data.ipynb` for code.
+Raw BTS T-100 CSVs (one per year) are ingested from Google Drive, cleaned, and transformed into four analysis-ready tables:
+
+| Output Table | Description |
+|---|---|
+| `monthly_hours.csv` | Monthly airborne hours and flight count |
+| `fleet_daily.csv` | Monthly hours and flights split by aircraft group |
+| `daily_hours.csv` | Daily hours disaggregated from monthly totals |
+| `day_of_week.csv` | Average daily hours by day of week per year |
+
+Key transformations: airborne minutes → hours, monthly → daily disaggregation via Dirichlet sampling, aircraft group fleet split.
 
 ## Exploratory Data Analysis
 Notebook: `/notebooks/01_eda.ipynb`
 
-Key findings on synthetic data:
+Key findings:
 - Strong yearly seasonality (Q4 and spring peaks)  
-- Holiday spikes as clear high-demand signals  
+- COVID-19 demand collapse visible in 2020 with post-pandemic recovery  
 - Weak day-of-week pattern  
 - High daily variance and outliers  
 - Quality checks (missing dates, zeros, duplicates)  
@@ -89,29 +90,27 @@ Visuals include time-series plots, seasonality heatmaps, DOW bars, and outlier t
 ## Feature Selection
 Notebook: `/notebooks/02_feature_selection.ipynb`
 
-Decisions informed by process review:
-
-| Feature              | Rationale / Source                  | Included? | Priority |
-|----------------------|-------------------------------------|-----------|----------|
-| Yearly seasonality   | Strong signal in EDA                | Yes       | High     |
-| Holidays             | Proxy for peak demand periods       | Yes       | Medium   |
-| Priority-like flag   | Undefined & ad-hoc                  | No        | Exclude  |
-| Workflow type        | Inheritance issues distort intent   | No        | Exclude  |
-| Fleet split          | Potential signal (tested)           | Optional  | Medium   |
+| Feature | Rationale / Source | Included? | Priority |
+|---|---|---|---|
+| Yearly seasonality | Strong signal in EDA | Yes | High |
+| Holidays | Proxy for peak demand periods | Yes | Medium |
+| COVID period flag | Structural break in 2020–2021 | Yes | High |
+| Priority-like flag | Undefined & ad-hoc | No | Exclude |
+| Workflow type | Inheritance issues distort intent | No | Exclude |
+| Fleet split | Potential signal (tested) | Optional | Medium |
 
 ## Prophet Forecasting Model
 Notebook: `/notebooks/03_prophet_modeling.ipynb`
 
-- Baseline Prophet trained on synthetic data  
-- Added holiday regressor and tested seasonality  
-- Backtested on hold-out period (MAE/MAPE/RMSE reported)  
+- Baseline Prophet trained on 2014–2023 data  
+- Added US holiday regressor and COVID changepoint  
+- Backtested on 2024 hold-out period (MAE/MAPE/RMSE reported)  
 - Forecast visualization with uncertainty intervals  
 
 ## Deployment (Streamlit App)
 App: `/app/app.py`  
 Live demo: [Add link after deploying to Streamlit Cloud]
 
-Simple interactive forecast tool:
 - Select future date range  
 - View predicted demand + confidence bands  
 - Toggle holiday effects  
@@ -121,6 +120,7 @@ Simple interactive forecast tool:
 - pandas, NumPy, matplotlib, seaborn, Plotly  
 - Prophet (facebook/prophet)  
 - Streamlit (deployment)  
+- Google Colab + Google Drive (development environment)  
 - Git, GitHub Pages (portfolio hosting)  
 
 ## How to Run Locally
@@ -128,3 +128,17 @@ Simple interactive forecast tool:
    ```bash
    git clone https://github.com/dingjamma/aviation-demand-forecasting-end-to-end.git
    cd aviation-demand-forecasting-end-to-end
+   ```
+2. Install dependencies  
+   ```bash
+   pip install -r requirements.txt
+   ```
+3. Download BTS T-100 Domestic Segment data (2014–2025) from [transtats.bts.gov](https://www.transtats.bts.gov/) and place CSVs in `data/raw/`
+4. Run notebooks in order: `00` → `01` → `02` → `03`
+5. Launch Streamlit app  
+   ```bash
+   streamlit run app/app.py
+   ```
+
+## License
+MIT
