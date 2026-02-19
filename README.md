@@ -16,7 +16,7 @@ No proprietary or internal data is used.
 Complete data science pipeline for forecasting aviation demand (airborne hours) with the goal of enabling proactive resource allocation and operational cost reduction.
 
 ### Key Components
-1. Anonymized process integrity review of booking classification  
+1. Process integrity review of booking classification  
 2. Data ingestion and cleaning from BTS T-100 raw CSVs  
 3. EDA on 12 years of flight demand data (seasonality, trends, variance)  
 4. Feature engineering & selection informed by process review  
@@ -24,7 +24,7 @@ Complete data science pipeline for forecasting aviation demand (airborne hours) 
 6. Streamlit deployment for interactive forecasting demo  
 
 ## Table of Contents
-- [Process Integrity Review (Anonymized Case Study)](#process-integrity-review-anonymized-case-study)  
+- [Process Integrity Review](#process-integrity-review)  
 - [Data Pipeline](#data-pipeline)  
 - [Exploratory Data Analysis](#exploratory-data-analysis)  
 - [Feature Selection](#feature-selection)  
@@ -34,16 +34,16 @@ Complete data science pipeline for forecasting aviation demand (airborne hours) 
 - [How to Run Locally](#how-to-run-locally)  
 - [License](#license)  
 
-## Process Integrity Review (Anonymized Case Study)
+## Process Integrity Review
 **Objective**  
-Assess alignment between documented operational booking rules and real-world practice in a fractional aviation context, to identify risks to downstream analytics, forecasting, and reporting.
+Assess alignment between documented operational booking rules and real-world practice in a commercial aviation context, to identify risks to downstream analytics, forecasting, and reporting.
 
 **Key Observations**  
 - Workflow classification often relies on unstructured free-text notes rather than deterministic, rule-based logic.  
-- Eligibility thresholds (e.g., advance notice periods) have ambiguous authoritative timestamps (client contact vs. system/coordinator entry).  
-- Similar business events (upgrades/downgrades) are inconsistently assigned to categories based on operational constraints rather than consistent criteria.  
+- Eligibility thresholds have ambiguous authoritative timestamps depending on when events are recorded vs. when they occur.  
+- Similar business events are inconsistently categorized based on operational constraints rather than consistent criteria.  
 - Status inheritance can cause one leg's classification to override the entire booking, losing the true business intent.  
-- Certain status flags lack formal definitions, measurable triggers, or structured fields — decisions appear ad-hoc.
+- Certain status flags lack formal definitions, measurable triggers, or structured fields.
 
 **Downstream Impact**  
 - Inconsistent or distorted demand signals  
@@ -58,8 +58,6 @@ Assess alignment between documented operational booking rules and real-world pra
 
 **How this informed the project**  
 Unreliable or unstructured signals were excluded from modeling or proxied (e.g., using external holidays for known peak demand periods). This ensured the forecasting pipeline used only robust, deterministic features.
-
-This case study is a generic, anonymized summary of the same type of analysis performed professionally — no proprietary details are disclosed.
 
 ## Data Pipeline
 Notebook: `/notebooks/00_data_pipeline.ipynb`
@@ -95,9 +93,7 @@ Notebook: `/notebooks/02_feature_selection.ipynb`
 | Yearly seasonality | Strong signal in EDA | Yes | High |
 | Holidays | Proxy for peak demand periods | Yes | Medium |
 | COVID period flag | Structural break in 2020–2021 | Yes | High |
-| Priority-like flag | Undefined & ad-hoc | No | Exclude |
-| Workflow type | Inheritance issues distort intent | No | Exclude |
-| Fleet split | Potential signal (tested) | Optional | Medium |
+| Fleet split by aircraft group | Potential demand signal (tested) | Optional | Medium |
 
 ## Prophet Forecasting Model
 Notebook: `/notebooks/03_prophet_modeling.ipynb`
